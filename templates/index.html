@@ -1,95 +1,59 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Assistant IA</title>
-  <style>
-    body { font-family: sans-serif; margin: 2rem; background: #fff; color: #222; }
-    textarea { width: 100%; height: 100px; margin-bottom: 1rem; }
-    button { padding: 0.5rem 1rem; margin: 0.25rem 0.5rem 0.25rem 0; }
-    .response-box { background: #f2f2f2; padding: 1rem; margin-top: 1rem; border-radius: 8px; }
-    .faq { margin-top: 2rem; }
-    .suggestions button { margin: 0.25rem; background: #eee; border: none; border-radius: 5px; cursor: pointer; }
-    .footer { text-align: right; margin-top: 3rem; font-size: 12px; color: #aaa; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <img src="{{ url_for('static', filename='agentic_logo.png') }}" alt="logo" style="height: 40px;" />
-    <h1>Assistant IA</h1>
-    <p>Bonjour ! Comment puis-je vous aider aujourd’hui ?</p>
-  </div>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 2rem;
+    background: #fff;
+    color: #222;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 1rem;
+    font-size: 16px;
+  }
+  button {
+    padding: 0.5rem 1rem;
+    margin: 0.25rem 0.5rem 0.25rem 0;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .response-box {
+    background: #f2f2f2;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 8px;
+  }
+  .faq {
+    margin-top: 2rem;
+  }
+  .suggestions button {
+    margin: 0.25rem;
+    background: #eee;
+    border: none;
+    border-radius: 5px;
+  }
+  .footer {
+    text-align: right;
+    margin-top: 3rem;
+    font-size: 12px;
+    color: #aaa;
+  }
 
-  <textarea id="user-input" placeholder="Décrivez votre problème..."></textarea><br/>
-  <button onclick="sendMessage()">Envoyer</button>
-  <button onclick="resetInput()">Effacer</button>
-
-  <div class="response-box" id="response">Réponse en attente...</div>
-
-  <div class="suggestions">
-    <strong>Suggestions fréquentes :</strong><br/>
-    <button onclick="setSuggestion('Mon imprimante ne répond plus')">Mon imprimante ne répond plus</button>
-    <button onclick="setSuggestion('Je n’ai plus internet au bureau')">Je n’ai plus internet au bureau</button>
-    <button onclick="setSuggestion('Impossible d’ouvrir Outlook')">Impossible d’ouvrir Outlook</button>
-    <button onclick="setSuggestion('Erreur 403 sur une application')">Erreur 403 sur une application</button>
-    <button onclick="setSuggestion('Connexion Windows impossible')">Connexion Windows impossible</button>
-  </div>
-
-  <div class="faq">
-    <h2>FAQ – Questions courantes</h2>
-    <p><strong>Mon imprimante ne répond pas, que faire ?</strong><br/>
-    Vérifiez l’alimentation, les câbles, et relancez l’imprimante. Si elle est en réseau, redémarrez la box.</p>
-
-    <p><strong>Je ne peux pas accéder à Internet</strong><br/>
-    Essayez de redémarrer votre ordinateur. Vérifiez le câble réseau ou la connexion Wi-Fi. Contactez l’astreinte si ça persiste.</p>
-
-    <p><strong>Mon application d’entreprise affiche une erreur (403, 404, 500…)</strong><br/>
-    Fermez le navigateur, videz le cache, reconnectez-vous. Vérifiez les horaires d’ouverture de l’application.</p>
-
-    <p><strong>Je ne peux pas me connecter à ma session Windows</strong><br/>
-    Vérifiez que vous êtes bien sur le bon domaine. Redémarrez et vérifiez vos identifiants. Si ça persiste, contactez l’astreinte.</p>
-
-    <p><strong>Comment déclarer une panne urgente ?</strong><br/>
-    Décrivez le souci dans ce chat avec le plus de détails possible. L’agent IA le transmettra à l’équipe concernée si nécessaire.</p>
-  </div>
-
-  <div class="footer">Interface propulsée par Agentic Solutions</div>
-
-  <script>
-    async function sendMessage() {
-      const message = document.getElementById("user-input").value.trim();
-      const responseBox = document.getElementById("response");
-
-      if (!message) {
-        responseBox.innerText = "Veuillez entrer un message.";
-        return;
-      }
-
-      responseBox.innerText = "Chargement...";
-      try {
-        const res = await fetch(window.location.origin + "/ask", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message }),
-        });
-
-        const data = await res.json();
-        responseBox.innerText = data.response || data.error || "Erreur inconnue.";
-      } catch (err) {
-        responseBox.innerText = "Erreur de connexion.";
-      }
+  /* 📱 Mobile responsive */
+  @media (max-width: 600px) {
+    body {
+      margin: 1rem;
     }
-
-    function setSuggestion(text) {
-      document.getElementById("user-input").value = text;
+    textarea {
+      height: 80px;
     }
-
-    function resetInput() {
-      document.getElementById("user-input").value = "";
-      document.getElementById("response").innerText = "";
+    button {
+      width: 100%;
+      margin-bottom: 0.5rem;
     }
-  </script>
-</body>
-</html>
+  }
+</style>
 
