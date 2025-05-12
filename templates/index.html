@@ -1,42 +1,41 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bienvenue</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      max-width: 600px;
-      margin: 50px auto;
-      text-align: center;
-      background-color: #f7f7f7;
-    }
-    h1 {
-      color: #333;
-    }
-    .user {
-      margin-top: 20px;
-      padding: 15px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Coccinelle.ai – Assistant IA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 3rem;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #D7263D;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 1rem 2rem;
+            background-color: #D7263D;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-  <h1>👋 Bonjour et bienvenue</h1>
-
-  {% if user %}
-    <div class="user">
-      <p><strong>Nom :</strong> {{ user.name }}</p>
-      <p><strong>Email :</strong> {{ user.email }}</p>
+    <div class="container">
+        <h1>Bienvenue sur Coccinelle.ai</h1>
+        <p>Votre assistant IA vocal pour centres d'appels.</p>
+        <a href="#" class="btn">Commencer</a>
     </div>
-  {% else %}
-    <p>Connexion non détectée.</p>
-    <a href="{{ url_for('google.login') }}">Se connecter avec Google</a>
-  {% endif %}
-
 </body>
 </html>
 
