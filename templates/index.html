@@ -3,108 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Assistant IA</title>
+  <title>Bienvenue</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 800px;
-      margin: auto;
-      background-color: #f9f9f9;
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      text-align: center;
+      background-color: #f7f7f7;
     }
     h1 {
-      color: #222;
+      color: #333;
     }
-    textarea {
-      width: 100%;
-      height: 120px;
-      padding: 10px;
-      font-size: 1rem;
-    }
-    button {
-      padding: 10px 20px;
-      margin-right: 10px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    #response {
+    .user {
       margin-top: 20px;
-      background: #eee;
       padding: 15px;
-      border-radius: 6px;
-      min-height: 40px;
-    }
-    .suggestions {
-      margin-top: 20px;
-    }
-    .suggestions button {
-      margin: 4px;
-      background: #e0e0e0;
-      border: none;
-      border-radius: 4px;
-    }
-    .userinfo {
-      margin-bottom: 10px;
-      font-size: 0.9rem;
-      color: #555;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 <body>
-
-  <h1>Assistant IA</h1>
+  <h1>👋 Bonjour et bienvenue</h1>
 
   {% if user %}
-    <div class="userinfo">
-      Connecté en tant que : {{ user.name }} ({{ user.email }})
+    <div class="user">
+      <p><strong>Nom :</strong> {{ user.name }}</p>
+      <p><strong>Email :</strong> {{ user.email }}</p>
     </div>
+  {% else %}
+    <p>Connexion non détectée.</p>
+    <a href="{{ url_for('google.login') }}">Se connecter avec Google</a>
   {% endif %}
-
-  <p>Bonjour ! Comment puis-je vous aider aujourd’hui ?</p>
-
-  <textarea id="message" placeholder="Décrivez votre problème..."></textarea><br>
-  <button onclick="sendMessage()">Envoyer</button>
-  <button onclick="resetMessage()">Effacer</button>
-
-  <div id="response">Réponse en attente...</div>
-
-  <div class="suggestions">
-    <strong>Suggestions fréquentes :</strong><br>
-    <button onclick="useSuggestion('Mon imprimante ne répond plus')">Mon imprimante ne répond plus</button>
-    <button onclick="useSuggestion('Je n’ai plus internet au bureau')">Je n’ai plus internet au bureau</button>
-    <button onclick="useSuggestion('Impossible d’ouvrir Outlook')">Impossible d’ouvrir Outlook</button>
-    <button onclick="useSuggestion('Erreur 403 sur une application')">Erreur 403 sur une application</button>
-    <button onclick="useSuggestion('Connexion Windows impossible')">Connexion Windows impossible</button>
-  </div>
-
-  <script>
-    async function sendMessage() {
-      const msg = document.getElementById('message').value.trim();
-      if (!msg) return;
-
-      document.getElementById('response').textContent = "⏳ Traitement en cours...";
-      try {
-        const res = await fetch("/ask", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: msg })
-        });
-        const data = await res.json();
-        document.getElementById('response').textContent = data.response || data.error || "❌ Erreur";
-      } catch (err) {
-        document.getElementById('response').textContent = "Erreur de connexion.";
-      }
-    }
-
-    function useSuggestion(text) {
-      document.getElementById('message').value = text;
-    }
-
-    function resetMessage() {
-      document.getElementById('message').value = "";
-      document.getElementById('response').textContent = "Réponse en attente...";
-    }
-  </script>
 
 </body>
 </html>

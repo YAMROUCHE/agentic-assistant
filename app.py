@@ -1,35 +1,34 @@
+import os
 from flask import Flask, redirect, url_for, session, render_template
 from flask_dance.contrib.google import make_google_blueprint, google
-import os
-from pinecone import Pinecone, PodSpec
-from dotenv import load_dotenv
-
-load_dotenv()
+from flask_cors import CORS
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret")
+CORS(app)
 
-# Auth Google
-blueprint = make_google_blueprint(
-    client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # autorise HTTP (utile en dev)
+
+google_bp = make_google_blueprint(
+    client_id=os.environ.get("GOOGLE_OAUTH_CLIENT_ID"),
+    client_secret=os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET"),
     scope=["profile", "email"],
-    redirect_url="/",
+    redirect_url="/login/google/authorized"
 )
-app.register_blueprint(blueprint, url_prefix="/login")
+app.register_blueprint(google_bp, url_prefix="/login")
 
 @app.route("/")
 def index():
     if not google.authorized:
         return redirect(url_for("google.login"))
     resp = google.get("/oauth2/v2/userinfo")
-    user_info = resp.json()
-    return render_template("index.html", user=user_info)
+    if resp.ok:
+        email = resp.json()["email"]
+        return f"✅ Connecté en tant que : {email}"
+    return "❌ Erreur lors de la connexion"
 
-# Pinecone (exemple minimal de client initialisé)
-pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-# Exemple : vérifie si l’index existe
-print(pc.list_indexes())
-
-# Pas de app.run ici — Gunicorn prendra le relais
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
 

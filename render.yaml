@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: agentic-assistant
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: FLASK_SECRET_KEY
+        fromEnvVar: FLASK_SECRET_KEY
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        fromEnvVar: GOOGLE_OAUTH_CLIENT_ID
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        fromEnvVar: GOOGLE_OAUTH_CLIENT_SECRET
+
