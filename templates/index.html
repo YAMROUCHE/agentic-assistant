@@ -1,185 +1,95 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Assistant IA – Agentic Solutions</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Assistant IA</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background-color: #ffffff;
-      color: #333;
-      max-width: 700px;
-      margin: auto;
-      padding: 40px 20px;
-      position: relative;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .logo img {
-      height: 40px;
-      width: 40px;
-    }
-    .subtitle {
-      font-size: 18px;
-      margin-bottom: 25px;
-      color: #666;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    .buttons {
-      margin-top: 10px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 15px;
-      border-radius: 8px;
-      margin-right: 10px;
-      border: none;
-      background-color: #e0e0e0;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #d5d5d5;
-    }
-    #response {
-      background: #f4f4f4;
-      padding: 15px;
-      margin-top: 20px;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      min-height: 40px;
-    }
-    .suggestions {
-      margin-top: 20px;
-    }
-    .suggestions span {
-      display: inline-block;
-      background-color: #eee;
-      color: #444;
-      padding: 6px 12px;
-      border-radius: 20px;
-      margin: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .suggestions span:hover {
-      background-color: #ddd;
-    }
-    .faq {
-      margin-top: 40px;
-      border-top: 1px solid #ccc;
-      padding-top: 20px;
-    }
-    .faq h3 {
-      font-size: 18px;
-      margin-bottom: 10px;
-    }
-    .faq-item {
-      margin-bottom: 12px;
-    }
-    .faq-item strong {
-      display: block;
-      margin-bottom: 4px;
-    }
-    .footer {
-      margin-top: 40px;
-      text-align: right;
-      font-size: 13px;
-      color: #999;
-    }
+    body { font-family: sans-serif; margin: 2rem; background: #fff; color: #222; }
+    textarea { width: 100%; height: 100px; margin-bottom: 1rem; }
+    button { padding: 0.5rem 1rem; margin: 0.25rem 0.5rem 0.25rem 0; }
+    .response-box { background: #f2f2f2; padding: 1rem; margin-top: 1rem; border-radius: 8px; }
+    .faq { margin-top: 2rem; }
+    .suggestions button { margin: 0.25rem; background: #eee; border: none; border-radius: 5px; cursor: pointer; }
+    .footer { text-align: right; margin-top: 3rem; font-size: 12px; color: #aaa; }
   </style>
 </head>
 <body>
-  <div class="logo">
-    <img src="agentic_logo.png" alt="logo">
-    <div style="font-weight: bold; font-size: 26px;">Assistant IA</div>
-  </div>
-  <div class="subtitle">Bonjour ! Comment puis-je vous aider aujourd’hui ?</div>
-
-  <textarea id="userInput" placeholder="Décris ton problème ici..."></textarea>
-  <div class="buttons">
-    <button onclick="sendMessage()">Envoyer</button>
-    <button onclick="resetFields()">Effacer</button>
+  <div class="header">
+    <img src="{{ url_for('static', filename='agentic_logo.png') }}" alt="logo" style="height: 40px;" />
+    <h1>Assistant IA</h1>
+    <p>Bonjour ! Comment puis-je vous aider aujourd’hui ?</p>
   </div>
 
-  <div id="response">Réponse...</div>
+  <textarea id="user-input" placeholder="Décrivez votre problème..."></textarea><br/>
+  <button onclick="sendMessage()">Envoyer</button>
+  <button onclick="resetInput()">Effacer</button>
+
+  <div class="response-box" id="response">Réponse en attente...</div>
 
   <div class="suggestions">
-    <strong>Suggestions :</strong>
-    <span onclick="setInput('Problème imprimante')">Problème imprimante</span>
-    <span onclick="setInput('Je n’ai plus internet')">Je n’ai plus internet</span>
-    <span onclick="setInput('Erreur de connexion')">Erreur de connexion</span>
-    <span onclick="setInput('Serveur indisponible')">Serveur indisponible</span>
+    <strong>Suggestions fréquentes :</strong><br/>
+    <button onclick="setSuggestion('Mon imprimante ne répond plus')">Mon imprimante ne répond plus</button>
+    <button onclick="setSuggestion('Je n’ai plus internet au bureau')">Je n’ai plus internet au bureau</button>
+    <button onclick="setSuggestion('Impossible d’ouvrir Outlook')">Impossible d’ouvrir Outlook</button>
+    <button onclick="setSuggestion('Erreur 403 sur une application')">Erreur 403 sur une application</button>
+    <button onclick="setSuggestion('Connexion Windows impossible')">Connexion Windows impossible</button>
   </div>
 
   <div class="faq">
-    <h3>FAQ – Questions fréquentes</h3>
-    <div class="faq-item">
-      <strong>Que faire si mon imprimante ne répond plus ?</strong>
-      Vérifiez les câbles, redémarrez l’imprimante et relancez le pilote via votre ordinateur.
-    </div>
-    <div class="faq-item">
-      <strong>Comment résoudre un problème de connexion internet ?</strong>
-      Vérifiez les branchements de la box, redémarrez-la, ou connectez-vous en Ethernet pour tester.
-    </div>
-    <div class="faq-item">
-      <strong>Le serveur est inaccessible, que faire ?</strong>
-      Contactez votre administrateur réseau. Le service peut être temporairement hors ligne.
-    </div>
-    <div class="faq-item">
-      <strong>Pourquoi ai-je un message “403” ou “404” ?</strong>
-      Vérifiez l’URL ou vos autorisations d’accès. Vous pourriez ne pas avoir les droits.
-    </div>
+    <h2>FAQ – Questions courantes</h2>
+    <p><strong>Mon imprimante ne répond pas, que faire ?</strong><br/>
+    Vérifiez l’alimentation, les câbles, et relancez l’imprimante. Si elle est en réseau, redémarrez la box.</p>
+
+    <p><strong>Je ne peux pas accéder à Internet</strong><br/>
+    Essayez de redémarrer votre ordinateur. Vérifiez le câble réseau ou la connexion Wi-Fi. Contactez l’astreinte si ça persiste.</p>
+
+    <p><strong>Mon application d’entreprise affiche une erreur (403, 404, 500…)</strong><br/>
+    Fermez le navigateur, videz le cache, reconnectez-vous. Vérifiez les horaires d’ouverture de l’application.</p>
+
+    <p><strong>Je ne peux pas me connecter à ma session Windows</strong><br/>
+    Vérifiez que vous êtes bien sur le bon domaine. Redémarrez et vérifiez vos identifiants. Si ça persiste, contactez l’astreinte.</p>
+
+    <p><strong>Comment déclarer une panne urgente ?</strong><br/>
+    Décrivez le souci dans ce chat avec le plus de détails possible. L’agent IA le transmettra à l’équipe concernée si nécessaire.</p>
   </div>
 
-  <div class="footer">
-    Interface propulsée par Agentic Solutions
-  </div>
+  <div class="footer">Interface propulsée par Agentic Solutions</div>
 
   <script>
-    function setInput(text) {
-      document.getElementById("userInput").value = text;
-    }
-
-    function resetFields() {
-      document.getElementById("userInput").value = "";
-      document.getElementById("response").innerText = "Réponse...";
-    }
-
     async function sendMessage() {
-      const message = document.getElementById("userInput").value;
-      document.getElementById("response").innerText = "Chargement...";
+      const message = document.getElementById("user-input").value.trim();
+      const responseBox = document.getElementById("response");
 
+      if (!message) {
+        responseBox.innerText = "Veuillez entrer un message.";
+        return;
+      }
+
+      responseBox.innerText = "Chargement...";
       try {
-        const res = await fetch("http://localhost:5001/ask", {
+        const res = await fetch(window.location.origin + "/ask", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ message })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
         });
 
         const data = await res.json();
-        if (data.response) {
-          document.getElementById("response").innerText = data.response;
-        } else {
-          document.getElementById("response").innerText = "Erreur : " + (data.error || "Inconnue");
-        }
+        responseBox.innerText = data.response || data.error || "Erreur inconnue.";
       } catch (err) {
-        document.getElementById("response").innerText = "Erreur de connexion.";
+        responseBox.innerText = "Erreur de connexion.";
       }
+    }
+
+    function setSuggestion(text) {
+      document.getElementById("user-input").value = text;
+    }
+
+    function resetInput() {
+      document.getElementById("user-input").value = "";
+      document.getElementById("response").innerText = "";
     }
   </script>
 </body>
 </html>
+
