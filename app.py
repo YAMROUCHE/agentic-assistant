@@ -1,19 +1,16 @@
-import os
-from flask import Flask, redirect, url_for, session, render_template
+from flask import Flask, redirect, url_for, session
 from flask_dance.contrib.google import make_google_blueprint, google
-from flask_cors import CORS
+import os
 
 app = Flask(__name__)
-CORS(app)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev")  # à sécuriser en prod
 
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # autorise HTTP (utile en dev)
-
+# Google OAuth via Flask-Dance
 google_bp = make_google_blueprint(
-    client_id=os.environ.get("GOOGLE_OAUTH_CLIENT_ID"),
-    client_secret=os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET"),
-    scope=["profile", "email"],
-    redirect_url="/login/google/authorized"
+    client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+    redirect_url="/login/google/authorized",
+    scope=["profile", "email"]
 )
 app.register_blueprint(google_bp, url_prefix="/login")
 
@@ -21,14 +18,17 @@ app.register_blueprint(google_bp, url_prefix="/login")
 def index():
     if not google.authorized:
         return redirect(url_for("google.login"))
-    resp = google.get("/oauth2/v2/userinfo")
-    if resp.ok:
+
+    try:
+        resp = google.get("/oauth2/v2/userinfo")
+        resp.raise_for_status()
         email = resp.json()["email"]
         return f"✅ Connecté en tant que : {email}"
-    return "❌ Erreur lors de la connexion"
+    except Exception as e:
+        return f"❌ Erreur lors de l'authentification Google :<br><code>{str(e)}</code>"
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect("/")
+    return redirect(url_for("index"))
 
