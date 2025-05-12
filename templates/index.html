@@ -1,59 +1,137 @@
-<style>
-  body {
-    font-family: sans-serif;
-    margin: 2rem;
-    background: #fff;
-    color: #222;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  textarea {
-    width: 100%;
-    height: 100px;
-    margin-bottom: 1rem;
-    font-size: 16px;
-  }
-  button {
-    padding: 0.5rem 1rem;
-    margin: 0.25rem 0.5rem 0.25rem 0;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .response-box {
-    background: #f2f2f2;
-    padding: 1rem;
-    margin-top: 1rem;
-    border-radius: 8px;
-  }
-  .faq {
-    margin-top: 2rem;
-  }
-  .suggestions button {
-    margin: 0.25rem;
-    background: #eee;
-    border: none;
-    border-radius: 5px;
-  }
-  .footer {
-    text-align: right;
-    margin-top: 3rem;
-    font-size: 12px;
-    color: #aaa;
-  }
-
-  /* 📱 Mobile responsive */
-  @media (max-width: 600px) {
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Assistant IA</title>
+  <style>
     body {
-      margin: 1rem;
+      font-family: sans-serif;
+      margin: 2rem;
+      background: #fff;
+      color: #222;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
     }
     textarea {
-      height: 80px;
+      width: 100%;
+      height: 100px;
+      margin-bottom: 1rem;
+      font-size: 16px;
     }
     button {
-      width: 100%;
-      margin-bottom: 0.5rem;
+      padding: 0.5rem 1rem;
+      margin: 0.25rem 0.5rem 0.25rem 0;
+      font-size: 14px;
+      cursor: pointer;
     }
-  }
-</style>
+    .response-box {
+      background: #f2f2f2;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+    }
+    .suggestions button {
+      margin: 0.25rem;
+      background: #eee;
+      border: none;
+      border-radius: 5px;
+    }
+    .footer {
+      text-align: right;
+      margin-top: 3rem;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        margin: 1rem;
+      }
+      textarea {
+        height: 80px;
+      }
+      button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="{{ url_for('static', filename='agentic_logo.png') }}" alt="logo" style="height: 40px;" />
+    <h1>Assistant IA</h1>
+    <p>Bonjour ! Comment puis-je vous aider aujourd’hui ?</p>
+  </div>
+
+  <textarea id="user-input" placeholder="Décrivez votre problème..."></textarea><br/>
+  <button onclick="sendMessage()">Envoyer</button>
+  <button onclick="resetInput()">Effacer</button>
+
+  <div class="response-box" id="response">Réponse en attente...</div>
+
+  <div class="suggestions">
+    <strong>Suggestions fréquentes :</strong><br/>
+    <div id="suggestions-container">Chargement...</div>
+  </div>
+
+  <div class="footer">Interface propulsée par Agentic Solutions</div>
+
+  <script>
+    async function sendMessage() {
+      const message = document.getElementById("user-input").value.trim();
+      const responseBox = document.getElementById("response");
+
+      if (!message) {
+        responseBox.innerText = "Veuillez entrer un message.";
+        return;
+      }
+
+      responseBox.innerText = "Chargement...";
+      try {
+        const res = await fetch(window.location.origin + "/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+        });
+
+        const data = await res.json();
+        responseBox.innerText = data.response || data.error || "Erreur inconnue.";
+      } catch (err) {
+        responseBox.innerText = "Erreur de connexion.";
+      }
+    }
+
+    function setSuggestion(text) {
+      document.getElementById("user-input").value = text;
+    }
+
+    async function loadSuggestions() {
+      const container = document.getElementById("suggestions-container");
+      try {
+        const res = await fetch("/suggestions");
+        const data = await res.json();
+        container.innerHTML = "";
+        data.forEach(suggestion => {
+          const btn = document.createElement("button");
+          btn.innerText = suggestion;
+          btn.onclick = () => setSuggestion(suggestion);
+          container.appendChild(btn);
+        });
+      } catch (e) {
+        container.innerText = "Suggestions indisponibles.";
+      }
+    }
+
+    function resetInput() {
+      document.getElementById("user-input").value = "";
+      document.getElementById("response").innerText = "";
+    }
+
+    window.onload = loadSuggestions;
+  </script>
+</body>
+</html>
 
