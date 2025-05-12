@@ -2,3 +2,4 @@ flask
 flask-cors
 pinecone
 pinecone-plugin-assistantflask-dance
+flask-dance
