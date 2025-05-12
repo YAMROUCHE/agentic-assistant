@@ -1,137 +1,111 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Assistant IA</title>
   <style>
     body {
-      font-family: sans-serif;
-      margin: 2rem;
-      background: #fff;
-      color: #222;
+      font-family: Arial, sans-serif;
+      padding: 20px;
       max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
+      margin: auto;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #222;
     }
     textarea {
       width: 100%;
-      height: 100px;
-      margin-bottom: 1rem;
-      font-size: 16px;
+      height: 120px;
+      padding: 10px;
+      font-size: 1rem;
     }
     button {
-      padding: 0.5rem 1rem;
-      margin: 0.25rem 0.5rem 0.25rem 0;
-      font-size: 14px;
+      padding: 10px 20px;
+      margin-right: 10px;
+      font-size: 1rem;
       cursor: pointer;
     }
-    .response-box {
-      background: #f2f2f2;
-      padding: 1rem;
-      margin-top: 1rem;
-      border-radius: 8px;
+    #response {
+      margin-top: 20px;
+      background: #eee;
+      padding: 15px;
+      border-radius: 6px;
+      min-height: 40px;
+    }
+    .suggestions {
+      margin-top: 20px;
     }
     .suggestions button {
-      margin: 0.25rem;
-      background: #eee;
+      margin: 4px;
+      background: #e0e0e0;
       border: none;
-      border-radius: 5px;
+      border-radius: 4px;
     }
-    .footer {
-      text-align: right;
-      margin-top: 3rem;
-      font-size: 12px;
-      color: #aaa;
-    }
-
-    @media (max-width: 600px) {
-      body {
-        margin: 1rem;
-      }
-      textarea {
-        height: 80px;
-      }
-      button {
-        width: 100%;
-        margin-bottom: 0.5rem;
-      }
+    .userinfo {
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+      color: #555;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <img src="{{ url_for('static', filename='agentic_logo.png') }}" alt="logo" style="height: 40px;" />
-    <h1>Assistant IA</h1>
-    <p>Bonjour ! Comment puis-je vous aider aujourd’hui ?</p>
-  </div>
 
-  <textarea id="user-input" placeholder="Décrivez votre problème..."></textarea><br/>
+  <h1>Assistant IA</h1>
+
+  {% if user %}
+    <div class="userinfo">
+      Connecté en tant que : {{ user.name }} ({{ user.email }})
+    </div>
+  {% endif %}
+
+  <p>Bonjour ! Comment puis-je vous aider aujourd’hui ?</p>
+
+  <textarea id="message" placeholder="Décrivez votre problème..."></textarea><br>
   <button onclick="sendMessage()">Envoyer</button>
-  <button onclick="resetInput()">Effacer</button>
+  <button onclick="resetMessage()">Effacer</button>
 
-  <div class="response-box" id="response">Réponse en attente...</div>
+  <div id="response">Réponse en attente...</div>
 
   <div class="suggestions">
-    <strong>Suggestions fréquentes :</strong><br/>
-    <div id="suggestions-container">Chargement...</div>
+    <strong>Suggestions fréquentes :</strong><br>
+    <button onclick="useSuggestion('Mon imprimante ne répond plus')">Mon imprimante ne répond plus</button>
+    <button onclick="useSuggestion('Je n’ai plus internet au bureau')">Je n’ai plus internet au bureau</button>
+    <button onclick="useSuggestion('Impossible d’ouvrir Outlook')">Impossible d’ouvrir Outlook</button>
+    <button onclick="useSuggestion('Erreur 403 sur une application')">Erreur 403 sur une application</button>
+    <button onclick="useSuggestion('Connexion Windows impossible')">Connexion Windows impossible</button>
   </div>
-
-  <div class="footer">Interface propulsée par Agentic Solutions</div>
 
   <script>
     async function sendMessage() {
-      const message = document.getElementById("user-input").value.trim();
-      const responseBox = document.getElementById("response");
+      const msg = document.getElementById('message').value.trim();
+      if (!msg) return;
 
-      if (!message) {
-        responseBox.innerText = "Veuillez entrer un message.";
-        return;
-      }
-
-      responseBox.innerText = "Chargement...";
+      document.getElementById('response').textContent = "⏳ Traitement en cours...";
       try {
-        const res = await fetch(window.location.origin + "/ask", {
+        const res = await fetch("/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message }),
+          body: JSON.stringify({ message: msg })
         });
-
         const data = await res.json();
-        responseBox.innerText = data.response || data.error || "Erreur inconnue.";
+        document.getElementById('response').textContent = data.response || data.error || "❌ Erreur";
       } catch (err) {
-        responseBox.innerText = "Erreur de connexion.";
+        document.getElementById('response').textContent = "Erreur de connexion.";
       }
     }
 
-    function setSuggestion(text) {
-      document.getElementById("user-input").value = text;
+    function useSuggestion(text) {
+      document.getElementById('message').value = text;
     }
 
-    async function loadSuggestions() {
-      const container = document.getElementById("suggestions-container");
-      try {
-        const res = await fetch("/suggestions");
-        const data = await res.json();
-        container.innerHTML = "";
-        data.forEach(suggestion => {
-          const btn = document.createElement("button");
-          btn.innerText = suggestion;
-          btn.onclick = () => setSuggestion(suggestion);
-          container.appendChild(btn);
-        });
-      } catch (e) {
-        container.innerText = "Suggestions indisponibles.";
-      }
+    function resetMessage() {
+      document.getElementById('message').value = "";
+      document.getElementById('response').textContent = "Réponse en attente...";
     }
-
-    function resetInput() {
-      document.getElementById("user-input").value = "";
-      document.getElementById("response").innerText = "";
-    }
-
-    window.onload = loadSuggestions;
   </script>
+
 </body>
 </html>
 
