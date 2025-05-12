@@ -1,58 +1,51 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+import os
+from flask import Flask, redirect, url_for, session, request, jsonify, render_template
 from flask_cors import CORS
 from flask_dance.contrib.google import make_google_blueprint, google
+from pinecone import Pinecone, PodSpec
 from dotenv import load_dotenv
-import os
-from pinecone import Pinecone
-from pinecone_plugins.assistant.models.chat import Message
 
-# Charger les variables d'environnement depuis le fichier .env
+# Charger les variables d'environnement
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 CORS(app)
 
-# Sécurité Flask
-app.secret_key = os.getenv("FLASK_SECRET_KEY")
-
-# Authentification Google OAuth2
-blueprint = make_google_blueprint(
-    client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    scope=["profile", "email"],
-    redirect_to="index"
+# Authentification Google
+google_bp = make_google_blueprint(
+    client_id=os.environ.get("GOOGLE_CLIENT_ID"),
+    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
+    redirect_url="/",
+    scope=["profile", "email"]
 )
-app.register_blueprint(blueprint, url_prefix="/login")
+app.register_blueprint(google_bp, url_prefix="/login")
 
 # Pinecone
-pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-assistant = pc.assistant.Assistant(assistant_name="astreinte")
+pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
+index = pc.Index("support-index")
 
-# Page d'accueil avec sécurité
 @app.route("/")
 def index():
     if not google.authorized:
         return redirect(url_for("google.login"))
-    return render_template("index.html")
+    resp = google.get("/oauth2/v2/userinfo")
+    user_info = resp.json()
+    return render_template("index.html", user=user_info)
 
-# API de réponse
 @app.route("/ask", methods=["POST"])
 def ask():
     if not google.authorized:
-        return jsonify({"error": "Utilisateur non authentifié"}), 401
+        return jsonify({"error": "Unauthorized"}), 401
 
     data = request.json
-    user_input = data.get("message", "")
-    if not user_input:
+    message = data.get("message", "")
+    if not message:
         return jsonify({"error": "Message manquant"}), 400
 
-    msg = Message(content=user_input)
-    try:
-        response = assistant.chat(messages=[msg])
-        content = response["message"]["content"]
-        return jsonify({"response": content})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # 👉 ici : ajouter un traitement si nécessaire avec Pinecone ou autre
+    return jsonify({"response": f"Vous avez dit : {message}"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+
