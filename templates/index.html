@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Assistant IA – Agentic Solutions</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #ffffff;
+      color: #333;
+      max-width: 700px;
+      margin: auto;
+      padding: 40px 20px;
+      position: relative;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .logo img {
+      height: 40px;
+      width: 40px;
+    }
+    .subtitle {
+      font-size: 18px;
+      margin-bottom: 25px;
+      color: #666;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .buttons {
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 15px;
+      border-radius: 8px;
+      margin-right: 10px;
+      border: none;
+      background-color: #e0e0e0;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #d5d5d5;
+    }
+    #response {
+      background: #f4f4f4;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      min-height: 40px;
+    }
+    .suggestions {
+      margin-top: 20px;
+    }
+    .suggestions span {
+      display: inline-block;
+      background-color: #eee;
+      color: #444;
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .suggestions span:hover {
+      background-color: #ddd;
+    }
+    .faq {
+      margin-top: 40px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
+    }
+    .faq h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .faq-item {
+      margin-bottom: 12px;
+    }
+    .faq-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: right;
+      font-size: 13px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="agentic_logo.png" alt="logo">
+    <div style="font-weight: bold; font-size: 26px;">Assistant IA</div>
+  </div>
+  <div class="subtitle">Bonjour ! Comment puis-je vous aider aujourd’hui ?</div>
+
+  <textarea id="userInput" placeholder="Décris ton problème ici..."></textarea>
+  <div class="buttons">
+    <button onclick="sendMessage()">Envoyer</button>
+    <button onclick="resetFields()">Effacer</button>
+  </div>
+
+  <div id="response">Réponse...</div>
+
+  <div class="suggestions">
+    <strong>Suggestions :</strong>
+    <span onclick="setInput('Problème imprimante')">Problème imprimante</span>
+    <span onclick="setInput('Je n’ai plus internet')">Je n’ai plus internet</span>
+    <span onclick="setInput('Erreur de connexion')">Erreur de connexion</span>
+    <span onclick="setInput('Serveur indisponible')">Serveur indisponible</span>
+  </div>
+
+  <div class="faq">
+    <h3>FAQ – Questions fréquentes</h3>
+    <div class="faq-item">
+      <strong>Que faire si mon imprimante ne répond plus ?</strong>
+      Vérifiez les câbles, redémarrez l’imprimante et relancez le pilote via votre ordinateur.
+    </div>
+    <div class="faq-item">
+      <strong>Comment résoudre un problème de connexion internet ?</strong>
+      Vérifiez les branchements de la box, redémarrez-la, ou connectez-vous en Ethernet pour tester.
+    </div>
+    <div class="faq-item">
+      <strong>Le serveur est inaccessible, que faire ?</strong>
+      Contactez votre administrateur réseau. Le service peut être temporairement hors ligne.
+    </div>
+    <div class="faq-item">
+      <strong>Pourquoi ai-je un message “403” ou “404” ?</strong>
+      Vérifiez l’URL ou vos autorisations d’accès. Vous pourriez ne pas avoir les droits.
+    </div>
+  </div>
+
+  <div class="footer">
+    Interface propulsée par Agentic Solutions
+  </div>
+
+  <script>
+    function setInput(text) {
+      document.getElementById("userInput").value = text;
+    }
+
+    function resetFields() {
+      document.getElementById("userInput").value = "";
+      document.getElementById("response").innerText = "Réponse...";
+    }
+
+    async function sendMessage() {
+      const message = document.getElementById("userInput").value;
+      document.getElementById("response").innerText = "Chargement...";
+
+      try {
+        const res = await fetch("http://localhost:5001/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await res.json();
+        if (data.response) {
+          document.getElementById("response").innerText = data.response;
+        } else {
+          document.getElementById("response").innerText = "Erreur : " + (data.error || "Inconnue");
+        }
+      } catch (err) {
+        document.getElementById("response").innerText = "Erreur de connexion.";
+      }
+    }
+  </script>
+</body>
+</html>
