@@ -1,6 +1,6 @@
 flask
 flask-cors
 flask-dance
-pinecone-client
+pinecone
 python-dotenv
 
